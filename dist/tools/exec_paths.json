@@ -1,0 +1,16 @@
+{
+    "cancel_order": "../tools/exec_codes/cancel_order.py",
+    "fetch_holdings": "../tools/exec_codes/fetch_holdings.py",
+    "fetch_marketsnapshot": "../tools/exec_codes/fetch_marketsnapshot.py",
+    "fetch_positions": "../tools/exec_codes/fetch_positions.py",
+    "fetch_tradebook": "../tools/exec_codes/fetch_tradebook.py",
+    "get_expires": "../tools/exec_codes/get_expiries.py",
+    "get_margin": "../tools/exec_codes/get_margin.py",
+    "get_optionchain": "../tools/exec_codes/get_optionchain.py",
+    "get_scripcodes": "../tools/exec_codes/get_scripcodes.py",
+    "market_data": "../tools/exec_codes/market_data.py",
+    "place_order": "../tools/exec_codes/place_order.py",
+    "order_book": "../tools/exec_codes/order_book.py",
+    "modify_order": "../tools/exec_codes/modify_order.py",
+    "set_access_token": "../tools/exec_codes/set_access_token.py"
+}

@@ -1,0 +1,11 @@
+{
+    "app_name": "",
+    "app_source": "",
+    "user_id": "",
+    "password": "",
+    "user_key": "",
+    "encription_key": "",
+    "client_code": "",
+    "TOTP_SECRET": "",
+    "pin": ""
+}
