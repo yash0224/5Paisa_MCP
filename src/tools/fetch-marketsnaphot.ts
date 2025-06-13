@@ -4,32 +4,17 @@ import { z } from "zod";
 import { fileURLToPath } from "url";
 import path from "path";
 import exec_filepaths from './exec_paths.json' with { type: "json" };
-
+import { python_cmd } from "./pythonCommand.js";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-interface Placinginput {
+interface MarketSnapshotinput {
     ScripCode: number;
     Exchange: string;
     ExchangeType: string;
   }
 
-function getPythonCommand(): string {
-  const commands = ["python3", "python"];
-  for (const cmd of commands) {
-    try {
-      const version = execSync(`${cmd} --version`).toString();
-      if (version.toLowerCase().includes("python")) {
-        return cmd;
-      }
-    } catch {
-      // Try the next one
-    }
-  }
-  throw new Error("No suitable Python interpreter found. Please install Python.");
-}
-
-class PlacingTool extends MCPTool<Placinginput> {
+class MarketSnapshotTool extends MCPTool<MarketSnapshotinput> {
   name = "Fetch_MarketSnapshot";
   description = "Fetching the last traded price of an asset";
   schema = {
@@ -47,9 +32,9 @@ class PlacingTool extends MCPTool<Placinginput> {
     },
   };    
 
-  async execute({ ScripCode, Exchange, ExchangeType }: Placinginput) {
+  async execute({ ScripCode, Exchange, ExchangeType }: MarketSnapshotinput) {
     try {
-      const pythoncmd = getPythonCommand();
+      const pythoncmd = python_cmd;
       const scriptPath = path.resolve(__dirname, exec_filepaths.fetch_marketsnapshot);
       const command = `${pythoncmd} ${scriptPath} ${ScripCode} ${Exchange} ${ExchangeType}`  
       const output = execSync(command);
@@ -57,7 +42,7 @@ class PlacingTool extends MCPTool<Placinginput> {
       return data;
     } catch (error) {
       if (error instanceof Error) {
-        // Optional: if using a library that throws custom error objects with "code"
+        
         const errWithCode = error as Error & { code?: string };
     
         if (errWithCode.code === 'NETWORK_ERROR') {
@@ -72,4 +57,4 @@ class PlacingTool extends MCPTool<Placinginput> {
 }
 }
 
-export default PlacingTool;
+export default MarketSnapshotTool;

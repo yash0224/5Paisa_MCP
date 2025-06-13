@@ -1,29 +1,13 @@
 import sys
 import json
 import pandas as pd
-from py5paisa import FivePaisaClient
-import creds
-import a_token
+from clientCreation import create_client
 
 # Optional: Pretty display for debugging
 pd.set_option('display.max_rows', None)
 pd.set_option('display.max_columns', None)
 pd.set_option('display.max_colwidth', None)
 pd.set_option('display.width', None)
-
-def create_client():
-    """Initializes and returns a FivePaisaClient instance."""
-    credentials = {
-        "APP_NAME": creds.app_name,
-        "APP_SOURCE": creds.app_source,
-        "USER_ID": creds.user_id,
-        "PASSWORD": creds.password,
-        "USER_KEY": creds.user_key,
-        "ENCRYPTION_KEY": creds.encription_key,
-    }
-    client = FivePaisaClient(cred=credentials)
-    client.set_access_token(a_token.access_token, a_token.client_code)
-    return client
 
 def fetch_historical_data(client, exchange, exchange_type, scrip_code, time_frame, from_date, to_date):
     """Fetches historical candle data."""

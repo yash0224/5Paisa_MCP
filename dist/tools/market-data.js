@@ -4,24 +4,10 @@ import { z } from "zod";
 import { fileURLToPath } from "url";
 import path from "path";
 import exec_filepaths from './exec_paths.json' with { type: "json" };
+import { python_cmd } from "./pythonCommand.js";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-function getPythonCommand() {
-    const commands = ["python3", "python"];
-    for (const cmd of commands) {
-        try {
-            const version = execSync(`${cmd} --version`).toString();
-            if (version.toLowerCase().includes("python")) {
-                return cmd;
-            }
-        }
-        catch {
-            // Try the next one
-        }
-    }
-    throw new Error("No suitable Python interpreter found. Please install Python.");
-}
-class PlacingTool extends MCPTool {
+class MarketDataTool extends MCPTool {
     name = "Market_Data";
     description = "Fetch historical data of market";
     schema = {
@@ -52,7 +38,7 @@ class PlacingTool extends MCPTool {
     };
     async execute({ Exchange, ExchangeType, ScripCode, TimeFrame, FromDate, ToDate }) {
         try {
-            const pythoncmd = getPythonCommand();
+            const pythoncmd = python_cmd;
             const scriptPath = path.resolve(__dirname, exec_filepaths.market_data);
             const command = `${pythoncmd} ${scriptPath} ${Exchange} ${ExchangeType} ${ScripCode} ${TimeFrame} ${FromDate} ${ToDate}`;
             const output = execSync(command);
@@ -61,7 +47,6 @@ class PlacingTool extends MCPTool {
         }
         catch (error) {
             if (error instanceof Error) {
-                // Optional: if using a library that throws custom error objects with "code"
                 const errWithCode = error;
                 if (errWithCode.code === 'NETWORK_ERROR') {
                     throw new Error('Unable to reach external service');
@@ -74,4 +59,4 @@ class PlacingTool extends MCPTool {
         }
     }
 }
-export default PlacingTool;
+export default MarketDataTool;

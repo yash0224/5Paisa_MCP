@@ -4,34 +4,18 @@ import { z } from "zod";
 import { fileURLToPath } from "url";
 import path from "path";
 import exec_filepaths from './exec_paths.json' with { type: "json" };
-
+import { python_cmd } from "./pythonCommand.js";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-interface Placinginput {
+interface Modifyinput {
     ExchangeID: string;
     Qty: number;
     Price: number;
     StopLossPrice: number;
   }
 
-function getPythonCommand(): string {
-  const commands = ["python3", "python"];
-  for (const cmd of commands) {
-    try {
-      const version = execSync(`${cmd} --version`).toString();
-      if (version.toLowerCase().includes("python")) {
-        return cmd;
-      }
-    } catch {
-      // Try the next one
-    }
-  }
-  throw new Error("No suitable Python interpreter found. Please install Python.");
-}  
-  
-
-class PlacingTool extends MCPTool<Placinginput> {
+class ModifyOrderTool extends MCPTool<Modifyinput> {
   name = "Modify_Order";
   description = "Modify the order using exchange order id, which can be found in order book. Stop execution if failed";
   schema = {
@@ -53,9 +37,9 @@ class PlacingTool extends MCPTool<Placinginput> {
     },
   };    
 
-  async execute({ ExchangeID, Qty, Price, StopLossPrice }: Placinginput) {
+  async execute({ ExchangeID, Qty, Price, StopLossPrice }: Modifyinput) {
     try {
-      const pythoncmd = getPythonCommand();
+      const pythoncmd = python_cmd;
       const scriptPath = path.resolve(__dirname, exec_filepaths.modify_order);
       const command = `${pythoncmd} ${scriptPath} ${ExchangeID} ${Qty} ${Price} ${StopLossPrice}`  
       const output = execSync(command);
@@ -63,7 +47,7 @@ class PlacingTool extends MCPTool<Placinginput> {
       return data;
     } catch (error) {
       if (error instanceof Error) {
-        // Optional: if using a library that throws custom error objects with "code"
+        
         const errWithCode = error as Error & { code?: string };
     
         if (errWithCode.code === 'NETWORK_ERROR') {
@@ -78,4 +62,4 @@ class PlacingTool extends MCPTool<Placinginput> {
 }
 }
 
-export default PlacingTool;
+export default ModifyOrderTool;

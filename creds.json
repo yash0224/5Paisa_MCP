@@ -4,7 +4,7 @@
     "user_id": "",
     "password": "",
     "user_key": "",
-    "encription_key": "",
+    "encryption_key": "",
     "client_code": "",
     "TOTP_SECRET": "",
     "pin": ""

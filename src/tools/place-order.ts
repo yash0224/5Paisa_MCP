@@ -4,7 +4,7 @@ import { z } from "zod";
 import { fileURLToPath } from "url";
 import path from "path";
 import exec_filepaths from './exec_paths.json' with { type: "json" };
-
+import { python_cmd } from "./pythonCommand.js";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -17,25 +17,11 @@ interface Placinginput {
     Price: number;
     StopLossPrice: number;
     IsIntraday: boolean;
+    AHPlaced: string;
     TOTP: number;
   }
   
-function getPythonCommand(): string {
-  const commands = ["python3", "python"];
-  for (const cmd of commands) {
-    try {
-      const version = execSync(`${cmd} --version`).toString();
-      if (version.toLowerCase().includes("python")) {
-        return cmd;
-      }
-    } catch {
-      // Try the next one
-    }
-  }
-  throw new Error("No suitable Python interpreter found. Please install Python.");
-}  
-
-class PlacingTool extends MCPTool<Placinginput> {
+class PlacingOrderTool extends MCPTool<Placinginput> {
   name = "Place_Order";
   description = "Place the order with the scrip code, stop execution if failed.";
   schema = {
@@ -65,29 +51,33 @@ class PlacingTool extends MCPTool<Placinginput> {
     },
     StopLossPrice: {
       type: z.number(),
-      description: "Stop loss price, consider 0 if not mentioned",
+      description: "Stop loss price, consider -1 if not mentioned",
     },
     IsIntraday: {
       type: z.boolean(),
-      description: "Is this intraday order or not, true if yes and false for delivary",
+      description: "Is this intraday order or not, true if yes and false for delivery. false if not mentioned",
+    },
+    AHPlaced: {
+      type: z.enum(['Y', 'N']),
+      description: "By default all orders are normal orders, pass Y to place offline orders and N if not mentioned",
     },
     TOTP: {
       type: z.number(),
-      description: "TOTP, which should be given by user everytime before order placement. Because it refreshes every 1 min. Before asking TOTP show the order placement details asset, quantity, limit price, stop loss price, is intraday or not",
+      description: "TOTP, which should be given by user everytime before order placement. Because it refreshes every 1 min. Before asking TOTP show the order placement details OrderType, Exchange, ExchangeType, ScripCode, Qty, Price, StopLossPrice, IsIntraday, AHPlaced",
     },
   };    
 
-  async execute({ OrderType, Exchange, ExchangeType, ScripCode, Qty, Price, StopLossPrice, IsIntraday, TOTP }: Placinginput) {
+  async execute({ OrderType, Exchange, ExchangeType, ScripCode, Qty, Price, StopLossPrice, IsIntraday, AHPlaced, TOTP }: Placinginput) {
     try {
-      const pythonCmd = getPythonCommand();
+      const pythonCmd = python_cmd;
       const scriptPath = path.resolve(__dirname, exec_filepaths.place_order);
-      const command = `${pythonCmd} ${scriptPath} ${OrderType} ${Exchange} ${ExchangeType} ${ScripCode} ${Qty} ${Price} ${StopLossPrice} ${IsIntraday}, ${TOTP}`  
+      const command = `${pythonCmd} ${scriptPath} ${OrderType} ${Exchange} ${ExchangeType} ${ScripCode} ${Qty} ${Price} ${StopLossPrice} ${IsIntraday} ${AHPlaced} ${TOTP}`  
       const output = execSync(command);
       const data = output.toString();
       return data;
     } catch (error) {
       if (error instanceof Error) {
-        // Optional: if using a library that throws custom error objects with "code"
+        
         const errWithCode = error as Error & { code?: string };
     
         if (errWithCode.code === 'NETWORK_ERROR') {
@@ -102,4 +92,4 @@ class PlacingTool extends MCPTool<Placinginput> {
 }
 }
 
-export default PlacingTool;
+export default PlacingOrderTool;

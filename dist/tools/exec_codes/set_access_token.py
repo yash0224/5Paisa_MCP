@@ -36,24 +36,23 @@ def get_and_save_access_token(client: FivePaisaClient, token_path: str) -> str:
         f.write(f'client_code = "{creds.client_code}"\n')
     return access_token
 
-
-def main():
+def set_client():
     cred = {
         "APP_NAME": creds.app_name,
         "APP_SOURCE": creds.app_source,
         "USER_ID": creds.user_id,
         "PASSWORD": creds.password,
         "USER_KEY": creds.user_key,
-        "ENCRYPTION_KEY": creds.encription_key
+        "ENCRYPTION_KEY": creds.encryption_key
     }
-
     client = FivePaisaClient(cred=cred)
-
     at = get_and_save_access_token(client, file_paths.token_file)
-    # print(at)
+    print(at)
+    return client
 
+def main():
     scrip_df = fetch_scrip_master(file_paths.scrip_master)
-
+    set_client()
 
 if __name__ == "__main__":
     main()
