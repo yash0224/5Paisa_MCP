@@ -3,6 +3,12 @@ import json
 from clientCreation import create_client
 import creds
 import pyotp
+from datetime import datetime
+
+def generate_mcp_string():
+    now = datetime.now()
+    mcp_string = now.strftime("MCP%Y%m%d%H%M%S") + f"{now.microsecond // 1000:02d}"  
+    return mcp_string
 
 def parse_args(args):
 
@@ -19,7 +25,7 @@ def parse_args(args):
 
     return OT, EX, ET, SC, QT, PR, SLP, ID, AHP, TOTP
 
-def build_order_params(OT, EX, ET, SC, QT, PR, SLP, ID, AHP):
+def build_order_params(OT, EX, ET, SC, QT, PR, SLP, ID, AHP, ROI):
     
     params = {"OrderType": OT}
     params["Exchange"] = EX
@@ -33,14 +39,17 @@ def build_order_params(OT, EX, ET, SC, QT, PR, SLP, ID, AHP):
         params["IsIntraday"] = ID
     if AHP != 'N':
         params["AHPlaced"] = AHP
+    params["RemoteOrderID"] = ROI
     return params
 
 
 def main():
     OT, EX, ET, SC, QT, PR, SLP, ID, AHP, TOTP = parse_args(sys.argv)
-    order_params = build_order_params(OT, EX, ET, SC, QT, PR, SLP, ID, AHP)
-    print(order_params)
+    ROI = generate_mcp_string()
+    order_params = build_order_params(OT, EX, ET, SC, QT, PR, SLP, ID, AHP, ROI)
+    
     client = create_client()
+    
     otp = pyotp.TOTP(creds.TOTP_SECRET).now()
     
     if int(otp) == int(TOTP):
