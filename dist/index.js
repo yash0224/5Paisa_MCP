@@ -1,50 +1,34 @@
 #!/usr/bin/env node
 import { MCPServer } from "mcp-framework";
+import { SSEServerTransport } from "@modelcontextprotocol/sdk/server/sse.js";
+import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 const server = new MCPServer();
-// Solution 1: Use async/await to keep the process alive
+// Keep process alive
+process.on('SIGINT', () => {
+    console.log('Shutting down gracefully...');
+    process.exit(0);
+});
+// Start with SSE transport on port 8080
 async function startServer() {
     try {
-        await server.start();
-        console.log('MCP Server started successfully');
-        // Keep the process alive
-        process.on('SIGINT', () => {
-            console.log('Received SIGINT, shutting down gracefully...');
-            server.stop();
-            process.exit(0);
+        const transport = new SSEServerTransport("/message", server);
+        // Start HTTP server
+        await transport.start({
+            port: 8080,
+            host: '0.0.0.0'
         });
-        process.on('SIGTERM', () => {
-            console.log('Received SIGTERM, shutting down gracefully...');
-            server.stop();
-            process.exit(0);
-        });
+        console.log('🚀 MCP Server running on http://localhost:8080');
+        console.log('📡 SSE endpoint: http://localhost:8080/message');
+        // Keep alive
+        setInterval(() => {
+            // Heartbeat to prevent exit
+        }, 30000);
     }
     catch (error) {
         console.error('Failed to start server:', error);
-        process.exit(1);
+        // Fallback to stdio
+        const stdioTransport = new StdioServerTransport();
+        await server.connect(stdioTransport);
     }
 }
 startServer();
-// Alternative Solution 2: If server.start() doesn't return a promise
-// server.start();
-// 
-// // Keep the process alive with an interval
-// setInterval(() => {
-//   // Empty interval to prevent exit
-// }, 60000);
-// 
-// process.on('SIGINT', () => {
-//   console.log('Received SIGINT, shutting down gracefully...');
-//   server.stop();
-//   process.exit(0);
-// });
-// Alternative Solution 3: Listen for uncaught exceptions
-process.on('uncaughtException', (error) => {
-    console.error('Uncaught Exception:', error);
-    server.stop();
-    process.exit(1);
-});
-process.on('unhandledRejection', (reason, promise) => {
-    console.error('Unhandled Rejection at:', promise, 'reason:', reason);
-    server.stop();
-    process.exit(1);
-});

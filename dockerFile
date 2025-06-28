@@ -1,6 +1,5 @@
 FROM node:20.19.1-bullseye
 
-
 # Update package list and install Python dependencies
 RUN apt-get update && \
     apt-get install -y \
@@ -45,8 +44,20 @@ RUN npm run build
 # Verify Python is accessible from the final environment
 RUN which python3 && which python && python --version
 
-# Expose port for HTTP (optional; only needed if server listens on HTTP)
+# Create non-root user for security
+RUN useradd -m -u 1001 appuser && \
+    chown -R appuser:appuser /app
+USER appuser
+
+# Expose port 8080 for HTTP/SSE server
 EXPOSE 8080
 
-# Start application
-CMD ["npm", "start"]
+# Health check to ensure server is running
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD curl -f http://localhost:8080/health || exit 1
+
+# Set NODE_ENV to production
+ENV NODE_ENV=production
+
+# Start application with proper signal handling
+CMD ["node", "dist/index.js"]
