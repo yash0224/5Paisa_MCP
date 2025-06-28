@@ -1,29 +1,29 @@
-# Start from Node base image
+# ✅ Use Node base with Debian (not Alpine)
 FROM node:18.19.0-bullseye
 
-# Install Python and pip
+# ✅ Install Python 3 and pip
 RUN apt-get update && \
     apt-get install -y python3 python3-pip && \
     pip3 install --upgrade pip
 
-# Set working directory
+# Create app directory
 WORKDIR /app
 
-# Copy only dependency files first
+# Copy only deps first for caching
 COPY package*.json ./
 
-# Install global and local npm dependencies
+# Install dependencies
 RUN npm install -g ts-node mcp-framework
 RUN npm install
 
-# Install Python packages
+# ✅ Install Python dependencies
 RUN pip3 install py5paisa pyotp
 
-# Copy source files
+# Copy rest of app
 COPY . .
 
-# Build project
+# Build TypeScript
 RUN npm run build
 
-# Default command
+# Start app
 CMD ["npm", "start"]
