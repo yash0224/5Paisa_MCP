@@ -1,0 +1,31 @@
+# Use official Node.js image with Python and npm installed
+FROM node:18.19.0-bullseye
+
+# Install Python and pip
+RUN apt-get update && \
+    apt-get install -y python3 python3-pip sudo && \
+    pip3 install --upgrade pip
+
+# Set working directory inside the container
+WORKDIR /app
+
+# Copy package.json and package-lock.json if available
+COPY package*.json ./
+
+# Install global npm packages
+RUN npm install -g ts-node mcp-framework
+
+# Install local dependencies
+RUN npm install
+
+# Copy source files
+COPY . .
+
+# Install Python dependencies
+RUN pip3 install py5paisa pyotp
+
+# Build the TypeScript code
+RUN npm run build
+
+# Set the default command to start the app
+CMD ["npm", "start"]
