@@ -1,6 +1,5 @@
-import { MCPServer } from "mcp-framework";
+#!/usr/bin/env node
 
-const port =   8080;
+import { MCPServer } from "mcp-framework";
 const server = new MCPServer();
-server.start({ port });
-console.log(`Server is running on port ${port}`);
+server.start();
